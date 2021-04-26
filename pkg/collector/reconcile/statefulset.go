@@ -25,7 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-func ExpectedStatefulSets(ctx context.Context, params Params, expected []appsv1.StatefulSet) error {
+func expectedStatefulSets(ctx context.Context, params Params, expected []appsv1.StatefulSet) error {
 	for _, obj := range expected {
 		desired := obj
 

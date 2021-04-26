@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package reconcile_test
+package reconcile
 
 import (
 	"context"
@@ -29,7 +29,6 @@ import (
 
 	"github.com/open-telemetry/opentelemetry-operator/api/v1alpha1"
 	"github.com/open-telemetry/opentelemetry-operator/internal/config"
-	"github.com/open-telemetry/opentelemetry-operator/pkg/collector/reconcile"
 )
 
 var logger = logf.Log.WithName("unit-tests")
@@ -82,7 +81,7 @@ func TestExpectedStatefulSets(t *testing.T) {
 			UID:       existing.UID,
 		},
 	}
-	params := reconcile.Params{
+	params := Params{
 		Client:   k8sClient,
 		Log:      logger,
 		Scheme:   testScheme,
@@ -130,7 +129,7 @@ func TestExpectedStatefulSets(t *testing.T) {
 		},
 	}
 
-	err = reconcile.ExpectedStatefulSets(context.Background(), params, update)
+	err = expectedStatefulSets(context.Background(), params, update)
 	require.NoError(t, err)
 
 	opts := []client.ListOption{
