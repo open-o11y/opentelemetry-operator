@@ -1,16 +1,20 @@
 package config
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-const testFile = "./testdata/config_test.yaml"
+var (
+	appHome  = os.Getenv("APP_HOME")
+	testFile = appHome + "/config/testdata/config_test.yaml"
+)
 
 func TestConfigLoad(t *testing.T) {
 	expectedFileSDConfig := map[interface{}]interface{}{
-		"files": []interface{}{"./file_sd_test.json"},
+		"files": []interface{}{appHome + "/config/testdata/file_sd_test.json"},
 	}
 	expectedStaticSDConfig := map[interface{}]interface{}{
 		"targets": []interface{}{

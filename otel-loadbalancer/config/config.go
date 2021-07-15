@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 
 	"gopkg.in/yaml.v2"
 )
@@ -42,6 +43,8 @@ func unmarshall(cfg *Config, configFile string) error {
 	if err != nil {
 		return err
 	}
+
+	yamlFile = []byte(os.ExpandEnv(string(yamlFile)))
 	if err = yaml.UnmarshalStrict(yamlFile, cfg); err != nil {
 		return fmt.Errorf("error unmarshaling YAML: %w", err)
 	}

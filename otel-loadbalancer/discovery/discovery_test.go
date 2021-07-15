@@ -9,8 +9,15 @@ import (
 
 	gokitlog "github.com/go-kit/log"
 	"github.com/otel-loadbalancer/config"
-	"github.com/otel-loadbalancer/suite"
 	"github.com/stretchr/testify/assert"
+)
+
+var (
+	appHome               = os.Getenv("APP_HOME")
+	tmpFile               = appHome + "/config/testdata/tmp.json"
+	testFile              = appHome + "/config/testdata/config_test.yaml"
+	initialFileSdTestFile = appHome + "/config/testdata/file_sd_test.json"
+	modFileSdTestFile     = appHome + "/config/testdata/file_sd_test_2.json"
 )
 
 func copyFileHelper(src string, dst string) error {
@@ -28,24 +35,22 @@ func copyFileHelper(src string, dst string) error {
 
 func copyFile(t testing.TB, src string, dst string) {
 	t.Helper()
-	tmp := "../suite/tmp.json"
-	err := ioutil.WriteFile(tmp, []byte(""), 0644)
+	err := ioutil.WriteFile(tmpFile, []byte(""), 0644)
 	assert.NoError(t, err)
 
-	err = copyFileHelper(src, tmp)
+	err = copyFileHelper(src, tmpFile)
 	assert.NoError(t, err)
 	err = copyFileHelper(dst, src)
 	assert.NoError(t, err)
-	err = copyFileHelper(tmp, dst)
+	err = copyFileHelper(tmpFile, dst)
 	assert.NoError(t, err)
 
-	err = os.Remove(tmp)
+	err = os.Remove(tmpFile)
 	assert.NoError(t, err)
 }
 
 func TestTargetDiscovery(t *testing.T) {
-	defaultConfigTestFile := suite.GetConfigTestFile()
-	cfg, err := config.Load(defaultConfigTestFile)
+	cfg, err := config.Load(testFile)
 	assert.NoError(t, err)
 	manager := NewManager(context.Background(), gokitlog.NewNopLogger())
 
@@ -75,7 +80,7 @@ func TestTargetDiscovery(t *testing.T) {
 		actualTargets := []string{}
 		expectedTargets := []string{"prom.domain:9001", "prom.domain:9002", "prom.domain:9003", "promfile.domain:1001", "promfile.domain:3000", "promfile.domain:4000"}
 
-		copyFile(t, suite.GetFileSdTestInitialFile(), suite.GetFileSdTestModFile())
+		copyFile(t, initialFileSdTestFile, modFileSdTestFile)
 
 		targets, err = manager.Targets()
 		assert.NoError(t, err)
@@ -90,7 +95,7 @@ func TestTargetDiscovery(t *testing.T) {
 
 		assert.Equal(t, expectedTargets, actualTargets)
 
-		copyFile(t, suite.GetFileSdTestInitialFile(), suite.GetFileSdTestModFile())
+		copyFile(t, modFileSdTestFile, initialFileSdTestFile)
 
 	})
 }
