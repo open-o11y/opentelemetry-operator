@@ -111,8 +111,7 @@ func newSharder(ctx context.Context) (*sharder.Sharder, *lbdiscovery.Manager, er
 		return nil, nil, err
 	}
 
-	// returns the list of collectors based on label selector
-	collectors, err := collector.Get(ctx, cfg.LabelSelector)
+	k8sClient, err := collector.NewClient()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -130,7 +129,9 @@ func newSharder(ctx context.Context) (*sharder.Sharder, *lbdiscovery.Manager, er
 		sharder.SetTargets(targets)
 		sharder.Reshard()
 	})
-	sharder.SetCollectors(collectors)
+	k8sClient.Watch(ctx, cfg.LabelSelector, func(collectors []string) {
+		sharder.SetCollectors(collectors)
+	})
 	return sharder, discoveryManager, nil
 }
 

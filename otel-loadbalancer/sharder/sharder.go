@@ -64,7 +64,6 @@ func (sharder *Sharder) SetTargets(targets []lbdiscovery.TargetData) {
 // SetCollectors sets the set of collectors with key=collectorName, value=Collector object.
 func (sharder *Sharder) SetCollectors(collectors []string) {
 	// TODO: Guard lb.collectors
-	// TODO: How do we handle the new collectors?
 	if len(collectors) == 0 {
 		log.Fatal("no collector instances present")
 	}
