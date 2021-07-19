@@ -48,7 +48,7 @@ func main() {
 	signal.Notify(interrupts, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
-		if err := srv.Start(); err != nil {
+		if err := srv.Start(); err != http.ErrServerClosed {
 			log.Fatalf("Can't start the server: %v", err)
 		}
 	}()
@@ -56,7 +56,7 @@ func main() {
 	for {
 		select {
 		case <-interrupts:
-			if err := srv.Shutdown(ctx); err != http.ErrServerClosed {
+			if err := srv.Shutdown(ctx); err != nil {
 				log.Println(err)
 				os.Exit(1)
 			}
@@ -66,16 +66,18 @@ func main() {
 			case fsnotify.Write:
 				log.Println("ConfigMap updated!")
 				// Restart the server to pickup the new config.
-				if err := srv.Shutdown(ctx); err != http.ErrServerClosed {
+				if err := srv.Shutdown(ctx); err != nil {
 					log.Fatalf("Cannot shutdown the server: %v", err)
 				}
 				srv, err = newServer(listenAddr)
 				if err != nil {
 					log.Fatalf("Error restarting the server with new config: %v", err)
 				}
-				if err := srv.Start(); err != nil {
-					log.Fatalf("Can't restart the server: %v", err)
-				}
+				go func() {
+					if err := srv.Start(); err != http.ErrServerClosed {
+						log.Fatalf("Can't restart the server: %v", err)
+					}
+				}()
 			}
 		case err := <-watcher.Errors:
 			log.Printf("Watcher error: %v", err)
