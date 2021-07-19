@@ -29,7 +29,7 @@ func TestTargetDiscovery(t *testing.T) {
 		assert.NoError(t, err)
 
 		gotTargets := <-results
-		wantTargets := []string{"prom.domain:9001", "prom.domain:9002", "prom.domain:9003"}
+		wantTargets := []string{"prom.domain:9001", "prom.domain:9002", "prom.domain:9003", "promfile.domain:1001", "promfile.domain:3000"}
 
 		sort.Strings(gotTargets)
 		sort.Strings(wantTargets)
@@ -45,7 +45,7 @@ func TestTargetDiscovery(t *testing.T) {
 		assert.NoError(t, err)
 
 		gotTargets := <-results
-		wantTargets := []string{"prom.domain:9004", "prom.domain:9005"}
+		wantTargets := []string{"prom.domain:9004", "prom.domain:9005", "promfile.domain:1001", "promfile.domain:3000"}
 
 		sort.Strings(gotTargets)
 		sort.Strings(wantTargets)

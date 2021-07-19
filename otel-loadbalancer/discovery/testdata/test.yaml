@@ -10,3 +10,7 @@ config:
     - targets: ["prom.domain:9001", "prom.domain:9002", "prom.domain:9003"]
       labels:
         my: label
+
+    file_sd_configs:
+    - files:
+      - ../config/testdata/file_sd_test.json
