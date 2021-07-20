@@ -51,9 +51,7 @@ func (allocator *Allocator) findNextCollector() {
 func (allocator *Allocator) SetTargets(targets []TargetItem) {
 	// Dump old data
 	allocator.m.Lock()
-	for k := range allocator.targetsWaiting {
-		delete(allocator.targetsWaiting, k)
-	}
+	allocator.targetsWaiting = make(map[string]TargetItem)
 	// Set new data
 	for _, i := range targets {
 		allocator.targetsWaiting[i.JobName+i.TargetURL] = i
