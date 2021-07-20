@@ -1,0 +1,5 @@
+- targets: ['col3', col4]
+  labels:
+    foo1: bar1
+
+- targets: ['promfile.domain:3000']

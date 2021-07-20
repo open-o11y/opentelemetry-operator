@@ -10,10 +10,10 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	gokitlog "github.com/go-kit/log"
+	"github.com/otel-loadbalancer/allocation"
 	"github.com/otel-loadbalancer/collector"
 	"github.com/otel-loadbalancer/config"
 	lbdiscovery "github.com/otel-loadbalancer/discovery"
-	"github.com/otel-loadbalancer/sharder"
 
 	"github.com/gorilla/mux"
 )
@@ -21,7 +21,7 @@ import (
 // TODO: Make the following constants flags.
 
 const (
-	configDir  = "./conf/"
+	configDir  = "./config/testdata/config_test.yaml"
 	listenAddr = ":3030"
 )
 
@@ -86,7 +86,7 @@ func main() {
 }
 
 type server struct {
-	sharder          *sharder.Sharder
+	sharder          *allocation.Allocator
 	discoveryManager *lbdiscovery.Manager
 	server           *http.Server
 }
@@ -107,7 +107,7 @@ func newServer(addr string) (*server, error) {
 	return s, nil
 }
 
-func newSharder(ctx context.Context) (*sharder.Sharder, *lbdiscovery.Manager, error) {
+func newSharder(ctx context.Context) (*allocation.Allocator, *lbdiscovery.Manager, error) {
 	cfg, err := config.Load("")
 	if err != nil {
 		return nil, nil, err
@@ -127,8 +127,8 @@ func newSharder(ctx context.Context) (*sharder.Sharder, *lbdiscovery.Manager, er
 		return nil, nil, err
 	}
 
-	sharder := sharder.NewSharder()
-	discoveryManager.Watch(func(targets []lbdiscovery.TargetData) {
+	sharder := allocation.NewAllocator()
+	discoveryManager.Watch(func(targets []allocation.TargetItem) {
 		sharder.SetTargets(targets)
 		sharder.Reshard()
 	})

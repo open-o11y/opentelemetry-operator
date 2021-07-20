@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	gokitlog "github.com/go-kit/log"
+	"github.com/otel-loadbalancer/allocation"
 	"github.com/otel-loadbalancer/config"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,10 +17,10 @@ func TestTargetDiscovery(t *testing.T) {
 	manager := NewManager(context.Background(), gokitlog.NewNopLogger())
 
 	results := make(chan []string)
-	manager.Watch(func(targets []TargetData) {
+	manager.Watch(func(targets []allocation.TargetItem) {
 		var result []string
 		for _, t := range targets {
-			result = append(result, t.Target)
+			result = append(result, t.TargetURL)
 		}
 		results <- result
 	})

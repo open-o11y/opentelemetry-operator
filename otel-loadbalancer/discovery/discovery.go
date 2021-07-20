@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/go-kit/log"
+	"github.com/otel-loadbalancer/allocation"
 	"github.com/otel-loadbalancer/config"
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/discovery"
@@ -32,12 +33,6 @@ type Manager struct {
 	logger  log.Logger
 
 	close chan struct{}
-}
-
-type TargetData struct {
-	JobName string
-	Target  string
-	Labels  model.LabelSet
 }
 
 func NewManager(ctx context.Context, logger log.Logger, options ...func(*discovery.Manager)) *Manager {
@@ -268,22 +263,22 @@ func (m *Manager) ApplyConfig(cfg config.Config) error {
 	return m.manager.ApplyConfig(discoveryCfg)
 }
 
-func (m *Manager) Watch(fn func(targets []TargetData)) {
+func (m *Manager) Watch(fn func(targets []allocation.TargetItem)) {
 	go func() {
 		for {
 			select {
 			case <-m.close:
 				return
 			case tsets := <-m.manager.SyncCh():
-				targets := []TargetData{}
+				targets := []allocation.TargetItem{}
 
 				for jobName, tgs := range tsets {
 					for _, tg := range tgs {
 						for _, t := range tg.Targets {
-							targets = append(targets, TargetData{
-								JobName: jobName,
-								Target:  string(t[model.AddressLabel]),
-								Labels:  tg.Labels,
+							targets = append(targets, allocation.TargetItem{
+								JobName:   jobName,
+								TargetURL: string(t[model.AddressLabel]),
+								Label:     tg.Labels,
 							})
 						}
 					}
