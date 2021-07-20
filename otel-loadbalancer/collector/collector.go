@@ -60,42 +60,40 @@ func (k Client) Watch(ctx context.Context, labelMap map[string]string, fn func(c
 	}
 	fn(collectors)
 
-	for {
-		watcher, err := k.k8sClient.CoreV1().Pods(ns).Watch(ctx, opts)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		go func() {
+	go func() {
+		for {
+			watcher, err := k.k8sClient.CoreV1().Pods(ns).Watch(ctx, opts)
+			if err != nil {
+				log.Fatal(err)
+			}
+			c := watcher.ResultChan()
 			for {
 				select {
-				case <-ctx.Done():
-					return
-				case <-time.After(watcherTimeout):
-					return
-				default:
-					c := watcher.ResultChan()
-					for event := range c {
-						pod, ok := event.Object.(*v1.Pod)
-						if !ok {
-							log.Fatal(err)
-						}
+				case event, ok := <-c:
+					if !ok {
+						log.Fatal(err)
+					}
 
-						switch event.Type {
-						case watch.Added:
-							collectors = append(collectors, pod.Name)
+					pod, ok := event.Object.(*v1.Pod)
+					if !ok {
+						log.Fatal(err)
+					}
 
-						case watch.Deleted:
-							for i := range collectors {
-								if collectors[i] == pod.Name {
-									collectors = append(collectors[:i], collectors[i+1:]...)
-								}
+					switch event.Type {
+					case watch.Added:
+						collectors = append(collectors, pod.Name)
+					case watch.Deleted:
+						for i := range collectors {
+							if collectors[i] == pod.Name {
+								collectors = append(collectors[:i], collectors[i+1:]...)
 							}
 						}
-						fn(collectors)
 					}
+					fn(collectors)
+				case <-time.After(watcherTimeout):
+					return
 				}
 			}
-		}()
-	}
+		}
+	}()
 }
