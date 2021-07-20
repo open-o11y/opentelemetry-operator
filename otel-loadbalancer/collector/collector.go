@@ -67,8 +67,11 @@ func (k Client) Watch(ctx context.Context, labelMap map[string]string, fn func(c
 				log.Fatal(err)
 			}
 			c := watcher.ResultChan()
+		Inner:
 			for {
 				select {
+				case <-ctx.Done():
+					return
 				case event, ok := <-c:
 					if !ok {
 						log.Fatal(err)
@@ -91,7 +94,7 @@ func (k Client) Watch(ctx context.Context, labelMap map[string]string, fn func(c
 					}
 					fn(collectors)
 				case <-time.After(watcherTimeout):
-					return
+					break Inner
 				}
 			}
 		}
