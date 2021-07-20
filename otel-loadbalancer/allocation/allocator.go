@@ -14,7 +14,7 @@ import (
 // Create a struct that holds collector - and jobs for that collector
 // This struct will be parsed into endpoint with collector and jobs info
 
-type Collector struct {
+type collector struct {
 	Name       string
 	NumTargets int
 }
@@ -69,19 +69,19 @@ func (allocator *Allocator) SetCollectors(collectors []string) {
 	if len(collectors) == 0 {
 		log.Fatal("no collector instances present")
 	}
-	sharder.m.Lock()
+	allocator.m.Lock()
 	for _, i := range collectors {
 		collector := collector{Name: i, NumTargets: 0}
 		allocator.collectors[i] = &collector
 	}
 
-	sharder.m.Unlock()
+	allocator.m.Unlock()
 	allocator.nextCollector = allocator.collectors[collectors[0]]
 }
 
 // Reshard needs to be called to process the new target updates.
 // Until Reshard is called, old targets will be served.
-func (allocator *Allocator) Reshard() {
+func (allocator *Allocator) Reallocate() {
 	// TODO: Reshard needs to be safe for concurrent access.
 	// Guard the allocator fields with a mutex where needed.
 	allocator.removeOutdatedTargets()

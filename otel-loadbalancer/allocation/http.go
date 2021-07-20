@@ -15,7 +15,7 @@ type TargetItem struct {
 	Link      linkJSON
 	TargetURL string
 	Label     model.LabelSet
-	Collector *Collector
+	Collector *collector
 }
 
 type linkJSON struct {

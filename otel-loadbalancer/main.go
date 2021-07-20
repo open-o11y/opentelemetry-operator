@@ -86,28 +86,28 @@ func main() {
 }
 
 type server struct {
-	sharder          *allocation.Allocator
+	allocator        *allocation.Allocator
 	discoveryManager *lbdiscovery.Manager
 	server           *http.Server
 }
 
 func newServer(addr string) (*server, error) {
-	sharder, discoveryManager, err := newSharder(context.Background())
+	allocator, discoveryManager, err := newAllocator(context.Background())
 	if err != nil {
 		return nil, err
 	}
 	s := &server{
-		sharder:          sharder,
+		allocator:        allocator,
 		discoveryManager: discoveryManager,
 	}
 	router := mux.NewRouter()
-	router.HandleFunc("/jobs", sharder.JobHandler).Methods("GET")
-	router.HandleFunc("/jobs/{job_id}/targets", sharder.TargetsHandler).Methods("GET")
+	router.HandleFunc("/jobs", allocator.JobHandler).Methods("GET")
+	router.HandleFunc("/jobs/{job_id}/targets", allocator.TargetsHandler).Methods("GET")
 	s.server = &http.Server{Addr: addr, Handler: router}
 	return s, nil
 }
 
-func newSharder(ctx context.Context) (*allocation.Allocator, *lbdiscovery.Manager, error) {
+func newAllocator(ctx context.Context) (*allocation.Allocator, *lbdiscovery.Manager, error) {
 	cfg, err := config.Load("")
 	if err != nil {
 		return nil, nil, err
@@ -126,15 +126,15 @@ func newSharder(ctx context.Context) (*allocation.Allocator, *lbdiscovery.Manage
 		return nil, nil, err
 	}
 
-	sharder := allocation.NewAllocator()
+	allocator := allocation.NewAllocator()
 	discoveryManager.Watch(func(targets []allocation.TargetItem) {
-		sharder.SetTargets(targets)
-		sharder.Reshard()
+		allocator.SetTargets(targets)
+		allocator.Reallocate()
 	})
 	k8sClient.Watch(ctx, cfg.LabelSelector, func(collectors []string) {
-		sharder.SetCollectors(collectors)
+		allocator.SetCollectors(collectors)
 	})
-	return sharder, discoveryManager, nil
+	return allocator, discoveryManager, nil
 }
 
 func (s *server) Start() error {
