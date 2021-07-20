@@ -2,6 +2,7 @@ package allocation
 
 import (
 	"log"
+	"sync"
 )
 
 /*
@@ -13,7 +14,7 @@ import (
 // Create a struct that holds collector - and jobs for that collector
 // This struct will be parsed into endpoint with collector and jobs info
 
-type collector struct {
+type Collector struct {
 	Name       string
 	NumTargets int
 }
@@ -22,7 +23,9 @@ type collector struct {
 // a number of OpenTelemetry collectors based on the number of targets.
 // Users need to call SetTargets when they have new targets in their
 // clusters and call Reshard to process the new targets and reshard.
+
 type Allocator struct {
+	m     sync.Mutex
 	cache displayCache
 
 	// TODO: guard with mutex where needed.
@@ -62,13 +65,17 @@ func (allocator *Allocator) SetTargets(targets []TargetItem) {
 func (allocator *Allocator) SetCollectors(collectors []string) {
 	// TODO: Guard lb.collectors
 	// TODO: How do we handle the new collectors?
+
 	if len(collectors) == 0 {
 		log.Fatal("no collector instances present")
 	}
+	sharder.m.Lock()
 	for _, i := range collectors {
 		collector := collector{Name: i, NumTargets: 0}
 		allocator.collectors[i] = &collector
 	}
+
+	sharder.m.Unlock()
 	allocator.nextCollector = allocator.collectors[collectors[0]]
 }
 

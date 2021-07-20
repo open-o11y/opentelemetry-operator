@@ -21,8 +21,8 @@ import (
 // TODO: Make the following constants flags.
 
 const (
-	configDir  = "./config/testdata/config_test.yaml"
-	listenAddr = ":3030"
+	configDir  = "/conf/"
+	listenAddr = ":443"
 )
 
 func main() {
@@ -63,7 +63,7 @@ func main() {
 			os.Exit(0)
 		case event := <-watcher.Events:
 			switch event.Op {
-			case fsnotify.Write:
+			case fsnotify.Create:
 				log.Println("ConfigMap updated!")
 				// Restart the server to pickup the new config.
 				if err := srv.Shutdown(ctx); err != nil {
@@ -113,8 +113,7 @@ func newSharder(ctx context.Context) (*allocation.Allocator, *lbdiscovery.Manage
 		return nil, nil, err
 	}
 
-	// returns the list of collectors based on label selector
-	collectors, err := collector.Get(ctx, cfg.LabelSelector)
+	k8sClient, err := collector.NewClient()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -132,7 +131,9 @@ func newSharder(ctx context.Context) (*allocation.Allocator, *lbdiscovery.Manage
 		sharder.SetTargets(targets)
 		sharder.Reshard()
 	})
-	sharder.SetCollectors(collectors)
+	k8sClient.Watch(ctx, cfg.LabelSelector, func(collectors []string) {
+		sharder.SetCollectors(collectors)
+	})
 	return sharder, discoveryManager, nil
 }
 

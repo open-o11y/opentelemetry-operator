@@ -30,7 +30,6 @@ func TestConfigLoad(t *testing.T) {
 	actualFileSDConfig := cfg.Config.ScrapeConfigs[0]["file_sd_configs"].([]interface{})[0]
 	actulaStaticSDConfig := cfg.Config.ScrapeConfigs[0]["static_configs"].([]interface{})[0]
 
-	assert.Equal(t, cfg.Mode, "LeastConnection")
 	assert.Equal(t, cfg.LabelSelector["app.kubernetes.io/instance"], "default.test")
 	assert.Equal(t, cfg.LabelSelector["app.kubernetes.io/managed-by"], "opentelemetry-operator")
 	assert.Equal(t, cfg.Config.ScrapeConfigs[0]["job_name"], "prometheus")
