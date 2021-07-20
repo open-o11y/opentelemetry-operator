@@ -21,8 +21,8 @@ import (
 // TODO: Make the following constants flags.
 
 const (
-	configDir  = "./conf/"
-	listenAddr = ":3030"
+	configDir  = "/conf/"
+	listenAddr = ":443"
 )
 
 func main() {
@@ -63,7 +63,7 @@ func main() {
 			os.Exit(0)
 		case event := <-watcher.Events:
 			switch event.Op {
-			case fsnotify.Write:
+			case fsnotify.Create:
 				log.Println("ConfigMap updated!")
 				// Restart the server to pickup the new config.
 				if err := srv.Shutdown(ctx); err != nil {
