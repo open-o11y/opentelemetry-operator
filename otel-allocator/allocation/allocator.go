@@ -23,7 +23,6 @@ type collector struct {
 // a number of OpenTelemetry collectors based on the number of targets.
 // Users need to call SetTargets when they have new targets in their
 // clusters and call Reshard to process the new targets and reshard.
-
 type Allocator struct {
 	m     sync.Mutex
 	cache displayCache
@@ -61,7 +60,6 @@ func (allocator *Allocator) SetTargets(targets []TargetItem) {
 
 // SetCollectors sets the set of collectors with key=collectorName, value=Collector object.
 func (allocator *Allocator) SetCollectors(collectors []string) {
-
 	if len(collectors) == 0 {
 		log.Fatal("no collector instances present")
 	}
@@ -78,7 +76,6 @@ func (allocator *Allocator) SetCollectors(collectors []string) {
 // Reshard needs to be called to process the new target updates.
 // Until Reshard is called, old targets will be served.
 func (allocator *Allocator) Reallocate() {
-	// TODO: Reshard needs to be safe for concurrent access.
 	// Guard the allocator fields with a mutex where needed.
 	allocator.removeOutdatedTargets()
 	allocator.processWaitingTargets()
