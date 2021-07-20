@@ -8,8 +8,6 @@ import (
 	"github.com/prometheus/common/model"
 )
 
-// TODO: Why do we have an _ in _link?
-// TODO: Add missing JSON tags.
 type TargetItem struct {
 	JobName   string
 	Link      linkJSON

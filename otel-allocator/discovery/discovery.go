@@ -284,7 +284,6 @@ func (m *Manager) Watch(fn func(targets []allocation.TargetItem)) {
 					}
 				}
 				fn(targets)
-				// TODO: Add timeout.
 			}
 		}
 	}()

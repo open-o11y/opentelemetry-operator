@@ -18,8 +18,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// TODO: Make the following constants flags.
-
 const (
 	configDir  = "/conf/"
 	listenAddr = ":443"
@@ -147,5 +145,3 @@ func (s *server) Shutdown(ctx context.Context) error {
 	s.discoveryManager.Close()
 	return s.server.Shutdown(ctx)
 }
-
-// TODO: Make sure there are no race conditions.

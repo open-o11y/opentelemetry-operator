@@ -61,7 +61,6 @@ func (allocator *Allocator) SetTargets(targets []TargetItem) {
 
 // SetCollectors sets the set of collectors with key=collectorName, value=Collector object.
 func (allocator *Allocator) SetCollectors(collectors []string) {
-	// TODO: How do we handle the new collectors?
 
 	if len(collectors) == 0 {
 		log.Fatal("no collector instances present")
