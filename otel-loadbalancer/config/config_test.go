@@ -10,7 +10,7 @@ const testFile = "./testdata/config_test.yaml"
 
 func TestConfigLoad(t *testing.T) {
 	expectedFileSDConfig := map[interface{}]interface{}{
-		"files": []interface{}{"./file_sd_test.json"},
+		"files": []interface{}{"file_sd_test.json"},
 	}
 	expectedStaticSDConfig := map[interface{}]interface{}{
 		"targets": []interface{}{
