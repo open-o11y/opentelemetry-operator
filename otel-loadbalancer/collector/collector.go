@@ -42,34 +42,6 @@ func NewClient() (Client, error) {
 	}, nil
 }
 
-func Get(ctx context.Context, LabelSelector map[string]string) ([]string, error) {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
-	collectors := []string{}
-	pods, err := clientset.CoreV1().Pods(os.Getenv("OTEL_NAMESPACE")).List(context.TODO(), metav1.ListOptions{
-		LabelSelector: labels.SelectorFromSet(LabelSelector).String(),
-	})
-	if err != nil {
-		return nil, err
-	}
-	for i := range pods.Items {
-		pod := pods.Items[i]
-		if pod.GetObjectMeta().GetDeletionTimestamp() == nil {
-			collectors = append(collectors, pod.Name)
-		}
-	}
-
-	return collectors, nil
-}
-
 func (k Client) Watch(ctx context.Context, labelMap map[string]string, fn func(collectors []string)) {
 	collectors := []string{}
 
