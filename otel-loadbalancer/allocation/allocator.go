@@ -28,13 +28,12 @@ type Allocator struct {
 	m     sync.Mutex
 	cache displayCache
 
-	// TODO: guard with mutex where needed.
 	targetsWaiting map[string]TargetItem // temp buffer to keep targets that are waiting to be processed
 
 	collectors map[string]*collector // all current collectors
 
 	nextCollector *collector
-	targetItems   map[string]*TargetItem // TODO: Merge this with targets, there should be one source of truth for all target state.
+	targetItems   map[string]*TargetItem
 }
 
 // findNextCollector finds the next collector with less number of targets.
@@ -50,8 +49,8 @@ func (allocator *Allocator) findNextCollector() {
 // load balancing decisions. This method should be called when where are
 // new targets discovered or existing targets are shutdown.
 func (allocator *Allocator) SetTargets(targets []TargetItem) {
-	// TODO: Guard lb.targetsWaiting.
 	// Dump old data
+	allocator.m.Lock()
 	for k := range allocator.targetsWaiting {
 		delete(allocator.targetsWaiting, k)
 	}
@@ -59,11 +58,11 @@ func (allocator *Allocator) SetTargets(targets []TargetItem) {
 	for _, i := range targets {
 		allocator.targetsWaiting[i.JobName+i.TargetURL] = i
 	}
+	allocator.m.Unlock()
 }
 
 // SetCollectors sets the set of collectors with key=collectorName, value=Collector object.
 func (allocator *Allocator) SetCollectors(collectors []string) {
-	// TODO: Guard lb.collectors
 	// TODO: How do we handle the new collectors?
 
 	if len(collectors) == 0 {
@@ -91,16 +90,19 @@ func (allocator *Allocator) Reallocate() {
 
 // removeOutdatedTargets removes targets that are no longer available.
 func (allocator *Allocator) removeOutdatedTargets() {
+	allocator.m.Lock()
 	for k := range allocator.targetItems {
 		if _, ok := allocator.targetsWaiting[k]; !ok {
 			allocator.collectors[allocator.targetItems[k].Collector.Name].NumTargets--
 			delete(allocator.targetItems, k)
 		}
 	}
+	allocator.m.Unlock()
 }
 
 // processWaitingTargets processes the newly set targets.
 func (allocator *Allocator) processWaitingTargets() {
+	allocator.m.Lock()
 	for k, v := range allocator.targetsWaiting {
 		if _, ok := allocator.targetItems[k]; !ok {
 			allocator.findNextCollector()
@@ -116,6 +118,7 @@ func (allocator *Allocator) processWaitingTargets() {
 			allocator.targetItems[v.JobName+v.TargetURL] = &targetItem
 		}
 	}
+	allocator.m.Unlock()
 }
 
 func NewAllocator() *Allocator {
