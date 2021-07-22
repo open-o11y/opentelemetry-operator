@@ -90,6 +90,7 @@ func (k Client) Watch(ctx context.Context, labelMap map[string]string, fn func(c
 						for i := range collectors {
 							if collectors[i] == pod.Name {
 								collectors = append(collectors[:i], collectors[i+1:]...)
+								break
 							}
 						}
 					}

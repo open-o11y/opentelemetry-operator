@@ -60,7 +60,8 @@ func (allocator *Allocator) SetTargets(targets []TargetItem) {
 // SetCollectors sets the set of collectors with key=collectorName, value=Collector object.
 func (allocator *Allocator) SetCollectors(collectors []string) {
 	if len(collectors) == 0 {
-		log.Fatal("no collector instances present")
+		log.Println("no collector instances present")
+		return
 	}
 	allocator.m.Lock()
 	for _, i := range collectors {
@@ -75,8 +76,13 @@ func (allocator *Allocator) SetCollectors(collectors []string) {
 // Reshard needs to be called to process the new target updates.
 // Until Reshard is called, old targets will be served.
 func (allocator *Allocator) Reallocate() {
-	// Guard the allocator fields with a mutex where needed.
 	allocator.removeOutdatedTargets()
+	allocator.processWaitingTargets()
+}
+
+// ReallocateCollectors reallocates the targets among the new collector instances
+func (allocator *Allocator) ReallocateCollectors() {
+	allocator.targetItems = make(map[string]*TargetItem)
 	allocator.processWaitingTargets()
 }
 

@@ -131,6 +131,7 @@ func newAllocator(ctx context.Context) (*allocation.Allocator, *lbdiscovery.Mana
 	})
 	k8sClient.Watch(ctx, cfg.LabelSelector, func(collectors []string) {
 		allocator.SetCollectors(collectors)
+		allocator.ReallocateCollectors()
 	})
 	return allocator, discoveryManager, nil
 }
@@ -141,7 +142,7 @@ func (s *server) Start() error {
 }
 
 func (s *server) Shutdown(ctx context.Context) error {
-	log.Println("Shutdowning server...")
+	log.Println("Shutting down server...")
 	s.discoveryManager.Close()
 	return s.server.Shutdown(ctx)
 }
