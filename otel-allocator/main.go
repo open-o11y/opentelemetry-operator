@@ -61,7 +61,7 @@ func main() {
 			os.Exit(0)
 		case event := <-watcher.Events:
 			switch event.Op {
-			case fsnotify.Create:
+			case fsnotify.Write:
 				log.Println("ConfigMap updated!")
 				// Restart the server to pickup the new config.
 				if err := srv.Shutdown(ctx); err != nil {

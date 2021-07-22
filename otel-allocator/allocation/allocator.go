@@ -24,8 +24,7 @@ type collector struct {
 // Users need to call SetTargets when they have new targets in their
 // clusters and call Reshard to process the new targets and reshard.
 type Allocator struct {
-	m     sync.Mutex
-	cache displayCache
+	m sync.Mutex
 
 	targetsWaiting map[string]TargetItem // temp buffer to keep targets that are waiting to be processed
 
@@ -79,7 +78,6 @@ func (allocator *Allocator) Reallocate() {
 	// Guard the allocator fields with a mutex where needed.
 	allocator.removeOutdatedTargets()
 	allocator.processWaitingTargets()
-	allocator.updateCache()
 }
 
 // removeOutdatedTargets removes targets that are no longer available.
