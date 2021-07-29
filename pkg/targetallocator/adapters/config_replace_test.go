@@ -21,6 +21,7 @@ import (
 	"github.com/open-telemetry/opentelemetry-operator/api/v1alpha1"
 	"github.com/open-telemetry/opentelemetry-operator/pkg/collector/adapters"
 	taa "github.com/open-telemetry/opentelemetry-operator/pkg/targetallocator/adapters"
+	"github.com/prometheus/prometheus/discovery/http"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 	v1 "k8s.io/api/core/v1"
@@ -104,6 +105,7 @@ func TestPrometheusParser(t *testing.T) {
 		for _, scrapeConfig := range cfg.PromConfig.ScrapeConfigs {
 			assert.Len(t, scrapeConfig.ServiceDiscoveryConfigs, 1)
 			assert.Equal(t, scrapeConfig.ServiceDiscoveryConfigs[0].Name(), "http")
+			assert.Equal(t, scrapeConfig.ServiceDiscoveryConfigs[0].(*http.SDConfig).URL, "https://test-targetallocator:443/jobs/"+scrapeConfig.JobName+"/targets?collector_id=$POD_NAME")
 			expectedMap[scrapeConfig.JobName] = true
 		}
 		for k := range expectedMap {

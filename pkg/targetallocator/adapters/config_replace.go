@@ -57,10 +57,10 @@ func ReplaceConfig(otelcol v1alpha1.OpenTelemetryCollector) (string, error) {
 		return "", fmt.Errorf("error unmarshaling YAML: %w", err)
 	}
 
-	for i, _ := range cfg.PromConfig.ScrapeConfigs {
+	for i := range cfg.PromConfig.ScrapeConfigs {
 		cfg.PromConfig.ScrapeConfigs[i].ServiceDiscoveryConfigs = discovery.Configs{
 			&http.SDConfig{
-				URL: "https://" + naming.TAService(otelcol) + ":443/jobs/" + cfg.PromConfig.ScrapeConfigs[i].JobName + "/targets?collector_id=$POD_NAME",
+				URL: fmt.Sprintf("https://%s:443/jobs/%s/targets?collector_id=$POD_NAME", naming.TAService(otelcol), cfg.PromConfig.ScrapeConfigs[i].JobName),
 			},
 		}
 	}
