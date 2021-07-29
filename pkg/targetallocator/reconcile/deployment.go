@@ -26,6 +26,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"github.com/open-telemetry/opentelemetry-operator/pkg/targetallocator"
+	"github.com/open-telemetry/opentelemetry-operator/pkg/targetallocator/adapters"
 )
 
 // +kubebuilder:rbac:groups="apps",resources=deployments,verbs=get;list;watch;create;update;patch;delete
@@ -34,8 +35,8 @@ import (
 func Deployments(ctx context.Context, params Params) error {
 	desired := []appsv1.Deployment{}
 
-	if checkEnabled(params) {
-		_, err := checkConfig(params)
+	if adapters.CheckEnabled(params.Instance) {
+		_, err := adapters.CheckConfig(params.Instance)
 		if err != nil {
 			return fmt.Errorf("failed to parse Promtheus config: %v", err)
 		}

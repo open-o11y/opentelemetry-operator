@@ -1,0 +1,40 @@
+processors:
+receivers:
+  jaeger:
+    protocols:
+      grpc:
+      
+  prometheus:
+    config:
+      scrape_configs:
+      - job_name: prometheus
+
+        static_configs:
+        - targets: ["prom.domain:9001", "prom.domain:9002", "prom.domain:9003"]
+          labels:
+            my: label
+
+        file_sd_configs:
+        - files:
+          - file1.json
+      
+      - job_name: service-x
+
+        static_configs:
+        - targets: ["prom.domain:1001", "prom.domain:1002", "prom.domain:1003"]
+          labels:
+            my: label
+
+        file_sd_configs:
+        - files:
+          - file2.json
+
+exporters:
+  logging:
+
+service:
+  pipelines:
+    traces:
+      receivers: [jaeger]
+      processors: []
+      exporters: [logging]

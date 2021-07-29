@@ -28,6 +28,7 @@ import (
 
 	"github.com/open-telemetry/opentelemetry-operator/pkg/naming"
 	"github.com/open-telemetry/opentelemetry-operator/pkg/targetallocator"
+	"github.com/open-telemetry/opentelemetry-operator/pkg/targetallocator/adapters"
 )
 
 // +kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
@@ -36,8 +37,8 @@ import (
 func Services(ctx context.Context, params Params) error {
 	desired := []corev1.Service{}
 
-	if checkEnabled(params) {
-		_, err := checkConfig(params)
+	if adapters.CheckEnabled(params.Instance) {
+		_, err := adapters.CheckConfig(params.Instance)
 		if err != nil {
 			return fmt.Errorf("failed to parse Promtheus config: %v", err)
 		}

@@ -12,23 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package reconcile
+package adapters
 
 import (
 	"github.com/open-telemetry/opentelemetry-operator/api/v1alpha1"
 	"github.com/open-telemetry/opentelemetry-operator/pkg/collector/adapters"
-	ta "github.com/open-telemetry/opentelemetry-operator/pkg/targetallocator/adapters"
 )
 
-func checkEnabled(params Params) bool {
-	return params.Instance.Spec.Mode == v1alpha1.ModeStatefulSet && params.Instance.Spec.TargetAllocator.Enabled
+func CheckEnabled(otelcol v1alpha1.OpenTelemetryCollector) bool {
+	return otelcol.Spec.Mode == v1alpha1.ModeStatefulSet && otelcol.Spec.TargetAllocator.Enabled
 }
 
-func checkConfig(params Params) (map[interface{}]interface{}, error) {
-	config, err := adapters.ConfigFromString(params.Instance.Spec.Config)
+func CheckConfig(otelcol v1alpha1.OpenTelemetryCollector) (map[interface{}]interface{}, error) {
+	config, err := adapters.ConfigFromString(otelcol.Spec.Config)
 	if err != nil {
 		return nil, err
 	}
 
-	return ta.ConfigToPromConfig(config)
+	return ConfigToPromConfig(config)
 }

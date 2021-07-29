@@ -28,6 +28,7 @@ import (
 
 	"github.com/open-telemetry/opentelemetry-operator/pkg/naming"
 	"github.com/open-telemetry/opentelemetry-operator/pkg/targetallocator"
+	"github.com/open-telemetry/opentelemetry-operator/pkg/targetallocator/adapters"
 )
 
 // +kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
@@ -36,7 +37,7 @@ import (
 func ConfigMaps(ctx context.Context, params Params) error {
 	desired := []corev1.ConfigMap{}
 
-	if checkEnabled(params) {
+	if adapters.CheckEnabled(params.Instance) {
 		cm, err := desiredConfigMap(ctx, params)
 		if err != nil {
 			return fmt.Errorf("failed to parse config: %v", err)
@@ -62,7 +63,7 @@ func desiredConfigMap(_ context.Context, params Params) (corev1.ConfigMap, error
 	labels := targetallocator.Labels(params.Instance)
 	labels["app.kubernetes.io/name"] = name
 
-	promConfig, err := checkConfig(params)
+	promConfig, err := adapters.CheckConfig(params.Instance)
 	if err != nil {
 		return corev1.ConfigMap{}, err
 	}
