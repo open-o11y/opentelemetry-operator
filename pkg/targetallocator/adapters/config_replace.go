@@ -17,6 +17,7 @@ package adapters
 import (
 	"fmt"
 
+	"github.com/mitchellh/mapstructure"
 	"github.com/open-telemetry/opentelemetry-operator/api/v1alpha1"
 	"github.com/open-telemetry/opentelemetry-operator/pkg/collector/adapters"
 	"github.com/open-telemetry/opentelemetry-operator/pkg/naming"
@@ -65,17 +66,12 @@ func ReplaceConfig(otelcol v1alpha1.OpenTelemetryCollector) (string, error) {
 		}
 	}
 
-	updPromCfg, err := yaml.Marshal(cfg.PromConfig)
-	if err != nil {
+	updPromCfgMap := make(map[string]interface{})
+	if err := mapstructure.Decode(cfg, &updPromCfgMap); err != nil {
 		return "", err
 	}
 
-	updPromCfgMap := make(map[interface{}]interface{})
-	if err := yaml.Unmarshal(updPromCfg, &updPromCfgMap); err != nil {
-		return "", err
-	}
-
-	config["receivers"].(map[interface{}]interface{})["prometheus"].(map[interface{}]interface{})["config"] = updPromCfgMap
+	config["receivers"].(map[interface{}]interface{})["prometheus"].(map[interface{}]interface{})["config"] = updPromCfgMap["PromConfig"]
 
 	out, err := yaml.Marshal(config)
 	if err != nil {
